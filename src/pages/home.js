@@ -1,12 +1,15 @@
-import { Box, CircularProgress, Container, Grid } from "@mui/material";
+import { Box, CircularProgress, Grid } from "@mui/material";
 import { getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import HouseCard from "../components/houseCard";
 import { postsCol } from "../firebase";
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     getPosts();
@@ -17,7 +20,7 @@ const Home = () => {
     const querySnapshot = await getDocs(postsCol);
     const list = [];
     querySnapshot.forEach((doc) => {
-      list.push(doc.data());
+      list.push({ ...doc.data(), id: doc.id });
     });
     setPosts(list);
     setIsLoading(false);
@@ -43,6 +46,7 @@ const Home = () => {
               location={post.location}
               title={post.title}
               waterSupply={post.waterSupply}
+              onClick={() => navigate(`/detail/${post.id}`)}
             />
           </Grid>
         ))}

@@ -24,6 +24,9 @@ const Post = () => {
   const [location, setLocation] = useState("");
   const [furnishingStatus, setFurnishingStatus] = useState("semi");
   const [waterSupply, setWaterSupply] = useState("borewell");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [rent, setRent] = useState("");
+  const [deposit, setDeposit] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   // Refs
@@ -44,8 +47,20 @@ const Post = () => {
       alert("Please enter a title");
       return;
     }
-    if (title.trim() === "") {
+    if (location.trim() === "") {
       alert("Please enter location");
+      return;
+    }
+    if (phoneNumber.trim() === "") {
+      alert("Please enter contact no.");
+      return;
+    }
+    if (rent.trim() === "") {
+      alert("Please enter rent amount");
+      return;
+    }
+    if (deposit.trim() === "") {
+      alert("Please enter deposit amount");
       return;
     }
 
@@ -58,12 +73,15 @@ const Post = () => {
 
     // Save post to firestore
     try {
-      const docRef = await addDoc(collection(db, "posts"), {
+      await addDoc(collection(db, "posts"), {
         image: downloadUrl,
         title,
         location,
         furnishingStatus,
         waterSupply,
+        phoneNumber,
+        rent,
+        deposit,
       });
       window.location = "/";
     } catch (e) {
@@ -76,7 +94,7 @@ const Post = () => {
 
   return (
     <Container maxWidth='xs'>
-      <Typography mt={4} variant='h4'>
+      <Typography mt={4} variant='h4' textAlign='center'>
         New post
       </Typography>
 
@@ -86,6 +104,7 @@ const Post = () => {
         display='flex'
         justifyContent='center'
         alignItems='center'
+        pb='10%'
         flexDirection='column'>
         <input
           type='file'
@@ -127,7 +146,7 @@ const Post = () => {
         <TextField
           id='outlined-required'
           size='small'
-          label='Title'
+          label='Property name'
           fullWidth
           margin='normal'
           placeholder='Eg. 2 BHK Apartment for rent'
@@ -139,12 +158,51 @@ const Post = () => {
         <TextField
           id='outlined-required'
           size='small'
-          label='Location'
+          label='Address'
           fullWidth
           margin='normal'
           placeholder='Eg. Dhanori'
           onChange={(event) => {
             setLocation(event.target.value);
+          }}
+        />
+
+        <TextField
+          id='outlined-required'
+          size='small'
+          label='Contact no.'
+          type='tel'
+          fullWidth
+          margin='normal'
+          placeholder='Eg. 9876543210'
+          onChange={(event) => {
+            setPhoneNumber(event.target.value);
+          }}
+        />
+
+        <TextField
+          id='outlined-required'
+          size='small'
+          label='Rent'
+          type='number'
+          fullWidth
+          margin='normal'
+          placeholder='Eg. 5000'
+          onChange={(event) => {
+            setRent(event.target.value);
+          }}
+        />
+
+        <TextField
+          id='outlined-required'
+          size='small'
+          label='Deposit'
+          type='number'
+          fullWidth
+          margin='normal'
+          placeholder='Eg. 10000'
+          onChange={(event) => {
+            setDeposit(event.target.value);
           }}
         />
 
