@@ -12,9 +12,10 @@ const HouseCard = ({
   location,
   furnishingStatus,
   waterSupply,
+  onClick,
 }) => {
   return (
-    <Card sx={{ maxWidth: 345, margin: "16px" }}>
+    <Card sx={{ maxWidth: 345, margin: "16px" }} onClick={onClick}>
       <CardActionArea>
         <CardMedia component='img' height='140' image={image} alt='image' />
         <CardContent>
