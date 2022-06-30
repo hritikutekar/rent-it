@@ -10,16 +10,22 @@ import {
   Typography,
   Box,
   Button,
+  Grid,
 } from "@mui/material";
 import CameraIcon from "@mui/icons-material/Camera";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useRef, useState } from "react";
 import { uploadBytes, getDownloadURL, ref } from "firebase/storage";
-import { imagesRef, db } from "../firebase";
+import { imagesRef, db, auth } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
+import { purple } from "@mui/material/colors";
 
 const Post = () => {
   // States
   const [image, setImage] = useState();
+  const [images, setImages] = useState([]);
+  const [imagesFile, setImagesFile] = useState([]);
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
   const [furnishingStatus, setFurnishingStatus] = useState("semi");
@@ -31,6 +37,7 @@ const Post = () => {
 
   // Refs
   const fileInputRef = useRef();
+  const filesInputRef = useRef();
 
   // Methods
   const handleSubmitPost = async (event) => {
@@ -41,26 +48,32 @@ const Post = () => {
 
     if (!image) {
       alert("Please select an image");
+      setIsLoading(false);
       return;
     }
     if (title.trim() === "") {
       alert("Please enter a title");
+      setIsLoading(false);
       return;
     }
     if (location.trim() === "") {
       alert("Please enter location");
+      setIsLoading(false);
       return;
     }
     if (phoneNumber.trim() === "") {
       alert("Please enter contact no.");
+      setIsLoading(false);
       return;
     }
     if (rent.trim() === "") {
       alert("Please enter rent amount");
+      setIsLoading(false);
       return;
     }
     if (deposit.trim() === "") {
       alert("Please enter deposit amount");
+      setIsLoading(false);
       return;
     }
 
@@ -82,6 +95,8 @@ const Post = () => {
         phoneNumber,
         rent,
         deposit,
+        createdBy: auth.currentUser.uid,
+        images: await uploadImages(),
       });
       window.location = "/";
     } catch (e) {
@@ -90,6 +105,19 @@ const Post = () => {
     }
 
     setIsLoading(false);
+  };
+
+  const uploadImages = async () => {
+    return await Promise.all(
+      Array.from(filesInputRef.current.files).map(async (file) => {
+        // Upload image
+        const uploadResult = await uploadBytes(
+          ref(imagesRef, `${Date.now()}-${file.name}`),
+          file
+        );
+        return await getDownloadURL(uploadResult.ref);
+      })
+    );
   };
 
   return (
@@ -124,7 +152,7 @@ const Post = () => {
             fileInputRef.current.click();
           }}
           style={{
-            backgroundColor: "lightsteelblue",
+            backgroundColor: "#6C63FF",
             width: "100%",
             height: 180,
             justifyContent: "center",
@@ -132,6 +160,7 @@ const Post = () => {
             display: "flex",
             margin: "16px 0",
             cursor: "pointer",
+            color: "white",
           }}>
           {image ? (
             <img
@@ -142,6 +171,67 @@ const Post = () => {
             <CameraIcon color='white' style={{ fontSize: 48 }} />
           )}
         </Card>
+
+        <Box width='100%' display='flex' flexGrow={1} flexWrap='wrap'>
+          <input
+            type='file'
+            accept='image/*'
+            style={{ display: "none" }}
+            ref={filesInputRef}
+            multiple
+            onChange={(event) => {
+              setImages([]);
+              Array.from(event.target.files).forEach((file) => {
+                let reader = new FileReader();
+                reader.onload = (e) => {
+                  setImages((prevState) => [...prevState, e.target.result]);
+                };
+
+                reader.readAsDataURL(file);
+              });
+            }}
+          />
+
+          <Grid container spacing={1} mt={1} mb={1}>
+            <Grid item xs={2}>
+              <Card
+                onClick={() => {
+                  filesInputRef.current.click();
+                }}
+                style={{
+                  backgroundColor: "#6C63FF",
+                  width: 60,
+                  height: 60,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  display: "flex",
+                  cursor: "pointer",
+                  borderRadius: 4,
+                  marginRight: 8,
+                  color: "white",
+                }}>
+                <AddIcon color='white' style={{ fontSize: 32 }} />
+              </Card>
+            </Grid>
+
+            {images.map((el) => {
+              return (
+                <Grid item xs={2} position='relative'>
+                  <img
+                    src={el}
+                    style={{
+                      objectFit: "cover",
+                      width: 60,
+                      height: 60,
+                      borderRadius: 4,
+                      marginRight: 8,
+                    }}
+                  />
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Box>
 
         <TextField
           id='outlined-required'

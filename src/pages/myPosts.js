@@ -1,29 +1,45 @@
 import { Box, CircularProgress, Grid, Typography } from "@mui/material";
-import { getDocs } from "firebase/firestore";
+import { deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HouseCard from "../components/houseCard";
-import { postsCol } from "../firebase";
+import { auth, postsCol } from "../firebase";
 
-const Home = () => {
+const MyPosts = () => {
   const [posts, setPosts] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState();
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    getPosts();
+    auth.onAuthStateChanged((user) => {
+      setCurrentUser(user);
+    });
   }, []);
+
+  useEffect(() => {
+    if (currentUser) getPosts();
+  }, [currentUser]);
 
   const getPosts = async () => {
     setIsLoading(true);
-    const querySnapshot = await getDocs(postsCol);
+    const myPostQuery = query(
+      postsCol,
+      where("createdBy", "==", auth.currentUser.uid)
+    );
+    const querySnapshot = await getDocs(myPostQuery);
     const list = [];
     querySnapshot.forEach((doc) => {
       list.push({ ...doc.data(), id: doc.id });
     });
     setPosts(list);
     setIsLoading(false);
+  };
+
+  const deletePost = async (id) => {
+    await deleteDoc(doc(postsCol, id));
+    await getPosts();
   };
 
   return (
@@ -47,7 +63,7 @@ const Home = () => {
           alignItems='center'>
           <img src='images/undraw_void_3ggu.png' width={300} />
           <Typography variant='h5' mt={2}>
-            No posts available
+            No posts yet
           </Typography>
         </Box>
       )}
@@ -66,6 +82,9 @@ const Home = () => {
               title={post.title}
               waterSupply={post.waterSupply}
               onClick={() => navigate(`/detail/${post.id}`)}
+              onDelete={() => {
+                deletePost(post.id);
+              }}
             />
           </Grid>
         ))}
@@ -74,4 +93,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default MyPosts;

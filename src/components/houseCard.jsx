@@ -1,6 +1,8 @@
 import {
+  Button,
   Card,
   CardActionArea,
+  CardActions,
   CardContent,
   CardMedia,
   Typography,
@@ -13,6 +15,7 @@ const HouseCard = ({
   furnishingStatus,
   waterSupply,
   onClick,
+  onDelete,
 }) => {
   return (
     <Card sx={{ maxWidth: 345, margin: "16px" }} onClick={onClick}>
@@ -29,6 +32,19 @@ const HouseCard = ({
           </Typography>
         </CardContent>
       </CardActionArea>
+      {onDelete && (
+        <CardActions>
+          <Button
+            color='error'
+            size='small'
+            onClick={(event) => {
+              event.stopPropagation();
+              onDelete();
+            }}>
+            Delete
+          </Button>
+        </CardActions>
+      )}
     </Card>
   );
 };

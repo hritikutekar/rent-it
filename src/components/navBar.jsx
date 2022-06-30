@@ -35,9 +35,17 @@ const NavBar = () => {
                     color='inherit'
                     style={{ marginRight: 12 }}
                     onClick={() => {
+                      navigate("/my-posts");
+                    }}>
+                    My Posts
+                  </Button>
+                  <Button
+                    color='inherit'
+                    style={{ marginRight: 12 }}
+                    onClick={() => {
                       navigate("/post");
                     }}>
-                    Post
+                    Create Post
                   </Button>
                 </Box>
               )}
